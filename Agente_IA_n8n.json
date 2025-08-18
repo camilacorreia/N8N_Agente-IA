@@ -1,0 +1,303 @@
+{
+  "name": "Agente IA n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e1444638-b3eb-47be-a0d4-0cea69a44f76",
+      "name": "When chat message received",
+      "webhookId": "a0e777fd-4348-4f9b-bdcc-c9b4b33f008a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c2342c9a-e346-4935-82e9-632147f9ac8a",
+              "name": "id_conversa",
+              "value": "={{ $json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "b8d3f235-2659-4b1f-849e-486aa1d91ab8",
+              "name": "mensagem",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "77c056fd-a202-4374-97d0-037eee5d3d28",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/12jp3TBI4Zz8Ew4QM065r07m4kWi-kGGJhBdVrZQI5_0/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Folha1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12jp3TBI4Zz8Ew4QM065r07m4kWi-kGGJhBdVrZQI5_0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Conversa": "={{ $json.id_conversa }}",
+            "Mensagme": "={{ $json.mensagem }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Conversa",
+              "displayName": "ID Conversa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mensagme",
+              "displayName": "Mensagme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        440,
+        0
+      ],
+      "id": "36f16185-01b5-423f-9dd4-3a3c09e0e356",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "17d7WQtpxJH0V7Mz",
+          "name": "n8n Google Sheets "
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.mensagem }}",
+        "options": {
+          "systemMessage": "Você é uma assistente virtual com uma personalidade amigável, acolhedora e atenciosa. Seu objetivo é recepcionar os solicitantes no chat e ajudá-los da melhor forma possível, respondendo dúvidas conforme a necessidade.\n\nSiga estas etapas no atendimento:\n1. Cumprimente o solicitante com cordialidade e simpatia.\n2. Solicite que ele informe a dúvida ou necessidade.\n3. Entenda e responda à dúvida de forma clara e objetiva, com linguagem amigável.\n4. Se não entender a dúvida, peça esclarecimentos e apresente opções simples e diretas para o usuário escolher.\n5. Se não souber a resposta, peça desculpas e informe que a solicitação será encaminhada para um atendente humano.\n\nRestrições importantes:\n- Nunca invente uma resposta se não souber. Encaminhe para o atendimento humano.\n- Sempre mantenha um tom amigável, simples e humano.\n- Utilize expressões leves como “Claro!”, “Sem problemas!”, “Com certeza!”, “Vamos resolver isso juntos!”, etc.\n\nExemplo de interação:\nUsuário: Olá, tudo bem? Pode me ajudar?\nIA: Oi! Tudo ótimo, e com você? Claro que posso te ajudar! Qual seria a sua dúvida?\n\nAgora, inicie o atendimento com base nessas diretrizes.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        620,
+        0
+      ],
+      "id": "c6eba67d-044d-4d6b-bfc4-f043290089dc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        580,
+        200
+      ],
+      "id": "8936e5ce-5c00-430d-9d90-88d5c3dfd8c1",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "efKeSGgk1pQgEsH8",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.id_conversa }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        220
+      ],
+      "id": "50ad2339-9239-4c7f-aa96-9d25e67422bc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        940,
+        180
+      ],
+      "id": "961328d6-efec-4229-af90-adf799ac5f9e",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        860,
+        240
+      ],
+      "id": "bc4569b0-72e4-4b4e-bd26-05bd0fab7d08",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        0
+      ],
+      "id": "810eb270-0966-4b60-97d0-6f167907bc52",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e59988bb-9abe-40b4-befc-b49c949f4c3b",
+  "meta": {
+    "instanceId": "c1b8639817ca43b23a961607b55bb39c88775653d175f11a7214af8afcab01a1"
+  },
+  "id": "qfeFvtOgQrlqfPg5",
+  "tags": [
+    {
+      "createdAt": "2025-06-07T19:27:13.072Z",
+      "updatedAt": "2025-06-07T19:27:13.072Z",
+      "id": "UUxQgiF9jxf0kbg6",
+      "name": "Agente IA"
+    }
+  ]
+}
